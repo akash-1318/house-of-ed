@@ -40,12 +40,12 @@ export default function LoginPage() {
 
   return (
     <div className="max-w-md space-y-4">
-      <h1 className="text-2xl font-bold">Login</h1>
+      <h1 className="text-2xl font-bold ">Login</h1>
       <form onSubmit={onSubmit} className="space-y-3">
         <div className="space-y-1 text-slate-600">
           <label className="text-sm">Email</label>
           <input
-            className="w-full border border-slate-300 rounded px-3 py-2 text-slate-300"
+            className="w-full border  rounded px-3 py-2"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -54,7 +54,7 @@ export default function LoginPage() {
           <label className="text-sm">Password</label>
           <input
             type="password"
-            className="w-full border border-slate-300 rounded px-3 py-2"
+            className="w-full border  rounded px-3 py-2"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />

@@ -136,10 +136,10 @@ export default function TaskDetailPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
-          <h1 className="text-2xl font-bold">{t.title}</h1>
+          <h1 className="text-2xl text-slate-600 font-bold">{t.title}</h1>
           <p className="text-sm text-slate-600">{t.subject}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 text-slate-600">
           <a
             className="px-3 py-2 rounded border no-underline"
             href="/dashboard/tasks"
