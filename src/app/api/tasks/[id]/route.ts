@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { requireUser } from "@/app/lib/route-helpers";
 import { connectDB } from "@/app/lib/db";
@@ -6,18 +6,31 @@ import { Task } from "@/app/models/Task";
 import { Note } from "@/app/models/Note";
 import { taskUpdateSchema } from "@/app/lib/validators";
 
-export async function GET(_req: Request, ctx: { params: { id: string } }) {
+type Params = { id: string };
+
+export async function GET(
+  _req: NextRequest,
+  context: { params: Promise<Params> }
+) {
   const { user, error } = await requireUser();
   if (error) return error;
 
-const { id } = await (ctx.params as any);
-  if (!mongoose.Types.ObjectId.isValid(id)) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
+  const { id } = await context.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return NextResponse.json({ error: "Invalid id" }, { status: 400 });
+  }
 
   await connectDB();
-  const task = await Task.findOne({ _id: id, userId: user!.id }).lean();
-  if (!task) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const notes = await Note.find({ taskId: id, userId: user!.id }).sort({ createdAt: -1 }).lean();
+  const task = await Task.findOne({ _id: id, userId: user!.id }).lean();
+  if (!task) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  const notes = await Note.find({ taskId: id, userId: user!.id })
+    .sort({ createdAt: -1 })
+    .lean();
 
   return NextResponse.json({
     task: {
@@ -37,17 +50,26 @@ const { id } = await (ctx.params as any);
   });
 }
 
-export async function PATCH(req: Request, ctx: { params: { id: string } }) {
+export async function PATCH(
+  req: NextRequest,
+  context: { params: Promise<Params> }
+) {
   const { user, error } = await requireUser();
   if (error) return error;
 
-const { id } = await (ctx.params as any);
-  if (!mongoose.Types.ObjectId.isValid(id)) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
+  const { id } = await context.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return NextResponse.json({ error: "Invalid id" }, { status: 400 });
+  }
 
   await connectDB();
+
   const body = await req.json().catch(() => null);
   const parsed = taskUpdateSchema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+  }
 
   const update: any = {};
   if (typeof parsed.data.title === "string") update.title = parsed.data.title;
@@ -56,25 +78,44 @@ const { id } = await (ctx.params as any);
   if (typeof parsed.data.priority === "string") update.priority = parsed.data.priority;
   if (typeof parsed.data.status === "string") update.status = parsed.data.status;
   if (parsed.data.dueDate === null) update.dueDate = null;
-  if (typeof parsed.data.dueDate === "string") update.dueDate = new Date(parsed.data.dueDate);
+  if (typeof parsed.data.dueDate === "string") {
+    update.dueDate = new Date(parsed.data.dueDate);
+  }
 
-  const updated = await Task.findOneAndUpdate({ _id: id, userId: user!.id }, { $set: update }, { new: true }).lean();
-  if (!updated) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const updated = await Task.findOneAndUpdate(
+    { _id: id, userId: user!.id },
+    { $set: update },
+    { new: true }
+  ).lean();
+
+  if (!updated) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
 
   return NextResponse.json({ ok: true });
 }
 
-export async function DELETE(_req: Request, ctx: { params: { id: string } }) {
+export async function DELETE(
+  _req: NextRequest,
+  context: { params: Promise<Params> }
+) {
   const { user, error } = await requireUser();
   if (error) return error;
 
-  const { id } = await (ctx.params as any);
-  if (!mongoose.Types.ObjectId.isValid(id)) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
+  const { id } = await context.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return NextResponse.json({ error: "Invalid id" }, { status: 400 });
+  }
 
   await connectDB();
+
   const deleted = await Task.deleteOne({ _id: id, userId: user!.id });
   await Note.deleteMany({ taskId: id, userId: user!.id });
 
-  if (deleted.deletedCount === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (deleted.deletedCount === 0) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
   return NextResponse.json({ ok: true });
 }
