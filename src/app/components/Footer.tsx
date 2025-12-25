@@ -4,7 +4,7 @@ export default function Footer() {
       <div className="mx-auto max-w-5xl px-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <span className="font-medium text-slate-800">Akash Sharma</span> ·
-          StudyHub
+          StudyHub Assignment
         </div>
         <div className="flex gap-4">
           <a
